@@ -13,6 +13,7 @@ May install opensll or libsodium
 ```bash
 git clone https://github.com/maywine/shadowsocks-cpp.git
 cd shadowsocks-cpp
+chmod +x install.py
 sudo ./install.py
 ``` 
 
