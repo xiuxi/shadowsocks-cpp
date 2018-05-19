@@ -34,8 +34,8 @@ def install_libsodium():
     os.system("mkdir temp")
     os.chdir(cur_dir + os.sep + "temp")
     os.system(libdium_download)
-    os.chdir(cur_dir + os.sep + "temp" + so.sep + "libsodium")
-    os.system("./config")
+    os.chdir(cur_dir + os.sep + "temp" + os.sep + "libsodium")
+    os.system("./configure")
     os.system("make make && make check")
     os.system("sudo make install")
    
@@ -65,8 +65,9 @@ def install():
     check()
     
     cur_dir = os.getcwd()
-    if not os.paths.exists(cur_dir + os.sep + "build"):
-        os.system("mkdir temp")
+    if not os.path.exists(cur_dir + os.sep + "build"):
+        os.system("mkdir build")
+        
     os.chdir(cur_dir + os.sep + "build")
     
     install_opensll()
@@ -75,13 +76,15 @@ def install():
     os.system("cmake ..")
     os.system("make")
     
-    if not os.paths.exists(cur_dir + os.sep + "build" + os .sep + "ssc++"):
+    if not os.path.exists(cur_dir + os.sep + "build" + os .sep + "ssc++"):
         print("build error")
         os.system("rm -rf *")
         sys.exit(1)
     
     os.system("sudo cp ssc++ /usr/local/bin")
-    os.system("rm -rf *")
+    os.chdir(cur_dir)
+    os.system("rm -rf build")
+    print("install ssc++ done")
     
 if __name__ == '__main__':
     install()
