@@ -8,6 +8,8 @@ created by [@clowwindy](https://github.com/clowwindy), For now only the server i
 
 ### Install
 
+May install opensll or libsodium
+
 ```bash
 git clone https://github.com/maywine/shadowsocks-cpp.git
 cd shadowsocks-cpp
