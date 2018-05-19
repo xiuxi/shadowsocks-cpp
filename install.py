@@ -2,11 +2,6 @@
 #coding=utf-8
 import os
 import sys
-import zipfile
-import platform
-import subprocess  
-import json
-openssl  sodium
 
 def install_opensll():
     if os.path.exists("/usr/local/include/openssl") and os.path.exists("/usr/local/lib/libcrypto.so"):
