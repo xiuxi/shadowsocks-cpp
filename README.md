@@ -63,7 +63,7 @@ Libsodium(ISC)              https://github.com/jedisct1/libsodium
 ```
 
 
-[GPLv3]:        https://github.com/maywine/shadowsocks-cpp/master/LICENSE.txt
+[GPLv3]:        https://github.com/maywine/shadowsocks-cpp/master/LICENSE
 
 
 
