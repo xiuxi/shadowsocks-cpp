@@ -55,13 +55,12 @@ def find_bin(name):
     return False
 
 def check():
-    bin_names = ["g++", "gie", "wget", "cmake", "make"]
+    bin_names = ["g++", "git", "wget", "cmake", "make"]
     for key in bin_names:
         if not find_bin(key):
             print("you need to install %s first" % (key))
             sys.exit(1)
             
-
 def install():
     check()
     
