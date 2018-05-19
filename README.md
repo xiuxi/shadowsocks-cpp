@@ -49,7 +49,7 @@ sudo ./install.py
 
 #### License
 
-[GPLv3]
+[LICENSE]
 
 #### Open Source Components / Libraries
 
@@ -63,7 +63,7 @@ Libsodium(ISC)              https://github.com/jedisct1/libsodium
 ```
 
 
-[GPLv3]:        https://github.com/maywine/shadowsocks-cpp/blob/master/LICENSE
+[LICENSE]:        https://github.com/maywine/shadowsocks-cpp/blob/master/LICENSE
 
 
 
