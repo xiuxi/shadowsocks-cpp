@@ -4,20 +4,23 @@ Shadowsocks-cpp
 ### Introduction
 
 Shadowsocks-cpp is written in c++ according to the [Shadowsocks](https://github.com/shadowsocks/shadowsocks) 
-created by [@clowwindy](https://github.com/clowwindy), For now only the server is implemented.
+created by [@clowwindy](https://github.com/clowwindy), you can visit [shadowsocks.org](https://www.shadowsocks.org/en/) 
+website for more detail introduction.
 
 ### Install
 
 May install opensll or libsodium
 
 ```bash
-git clone https://github.com/maywine/shadowsocks-cpp.git
-cd shadowsocks-cpp
-chmod +x install.py
-sudo ./install.py
+    git clone https://github.com/maywine/shadowsocks-cpp.git
+    cd shadowsocks-cpp
+    chmod +x install.py
+    sudo ./install.py
 ``` 
 
 ### Usage
+
+```bash
     ssc++
         -c, --config             path to config file, default: null
         -p, --server_port        server port, default: 8388
@@ -48,7 +51,32 @@ sudo ./install.py
         -v, --verbose            verbose mode, show more information
             --prefer_ipv6        resolve ipv6 address first
             --version            show version information
-        -?, --help               print this message
+        -?, --help               print this message            
+```
+### Config File
+
+Shadowsocks accepts JSON format configs like this:
+
+```bash
+    {
+        "server":"my_server_ip",
+        "server_port":8388,
+        "password":"barfoo!",
+        "timeout":300,
+        "method":"xchacha20-ietf-poly1305"
+    }
+```
+
+Explanation of each field:
+
+```bash
+    server: your hostname or server IP (IPv4/IPv6).
+    server_port: server port number.
+    password: a password used to encrypt transfer.
+    timeout: connections timeout in seconds.
+    method: encryption method.
+```
+For more detail, see [www.shadowsocks.org](https://www.shadowsocks.org/en/config/quick-guide.html) guide.
 
 #### License
 
@@ -56,13 +84,13 @@ sudo ./install.py
 
 #### Open Source Components / Libraries
 
-```
-Shadowsocks (Apache 2.0)    https://github.com/shadowsocks/shadowsocks
-Cmdline                     https://github.com/tanakh/cmdline
-Easylogging++ (MIT)         https://github.com/muflihun/easyloggingpp
-json (MIT)                  https://github.com/nlohmann/json
-Openssl                     https://github.com/openssl/openssl
-Libsodium(ISC)              https://github.com/jedisct1/libsodium
+```bash
+    Shadowsocks (Apache 2.0)    https://github.com/shadowsocks/shadowsocks
+    Cmdline                     https://github.com/tanakh/cmdline
+    Easylogging++ (MIT)         https://github.com/muflihun/easyloggingpp
+    json (MIT)                  https://github.com/nlohmann/json
+    Openssl                     https://github.com/openssl/openssl
+    Libsodium(ISC)              https://github.com/jedisct1/libsodium
 ```
 
 
