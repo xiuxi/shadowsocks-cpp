@@ -76,7 +76,7 @@ Explanation of each field:
     timeout: connections timeout in seconds.
     method: encryption method.
 ```
-For more detail, see [www.shadowsocks.org](https://www.shadowsocks.org/en/config/quick-guide.html) guide.
+For more detail, see [shadowsocks.org](https://www.shadowsocks.org/en/config/quick-guide.html) guide.
 
 #### License
 
