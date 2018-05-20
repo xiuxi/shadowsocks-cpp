@@ -40,7 +40,7 @@ void init_cmdline(cmdline::parser &cmd)
     cmd.add<int>("timeout", 't', "timeout in seconds, default: 300", false, 300);  
     cmd.add("fast_open", '\0', "use TCP_FASTOPEN, requires Linux 3.7+");
     cmd.add<int>("workers", '\0', "number of progress to run, default: 1", false, 1);    
-    cmd.add<std::string>("manager_address", '\0', "optional server manager UDP address, see wiki", false, "");      
+    cmd.add<std::string>("manager_address", '\0', "optional server manager UDP address", false, "");      
     cmd.add<std::string>("user", '\0', "username to run as", false, ""); 
     cmd.add<std::string>("forbidden_ip", '\0', "comma seperated IP list forbidden to connect, default: 127.0.0.0/8,::1/128", false, "127.0.0.0/8,::1/128");
     cmd.add<std::string>("daemon", 'd', "daemon mode: start/stop/restart, default: null", false, "", cmdline::oneof<std::string>("start", "stop", "restart"));
