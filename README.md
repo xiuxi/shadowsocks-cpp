@@ -41,7 +41,7 @@ ssc++
     -t, --timeout            timeout in seconds, default: 300
         --fast_open          use TCP_FASTOPEN, requires Linux 3.7+
         --workers            number of progress to run, default: 1
-        --manager_address    optional server manager UDP address, see wiki
+        --manager_address    optional server manager UDP address
         --user               username to run as
         --forbidden_ip       comma seperated IP list forbidden to connect, default: 127.0.0.0/8,::1/128
     -d, --daemon             daemon mode: start/stop/restart, default: null
