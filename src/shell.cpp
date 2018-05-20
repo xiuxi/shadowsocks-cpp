@@ -67,9 +67,6 @@ static void check_config(nlohmann::json &config, const cmdline::parser &cmd)
         std::cout << cmd.usage();
         exit(1);
     }
-
-    if (config["local_address"] == "0.0.0.0") 
-        LOG(WARNING) << "warning: local set to listen on 0.0.0.0, it\'s not safe";
         
     if (config["server"] == "127.0.0.1" || config["server"] == "localhost")
         LOG(WARNING) << "warning: server set to listen on " 
