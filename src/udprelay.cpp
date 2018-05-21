@@ -136,6 +136,7 @@ void UDPRelay::_handle_server()
     el_log->info("udp data to %v:%v from %v:%v", dest_addr, dest_port, recv_addr.first, recv_addr.second);
     
     _ota_enable_session = (addrtype & ADDRTYPE_AUTH);
+    int one_time_auth_size = 0;
     if (_ota_enable && !_ota_enable_session)
     {
         el_log->warn("client one time auth is required");
@@ -143,6 +144,7 @@ void UDPRelay::_handle_server()
     }
     if (_ota_enable_session)
     {
+        one_time_auth_size = ONETIMEAUTH_BYTES;
         if (de_data.size() < header_length + ONETIMEAUTH_BYTES)
         {
             el_log->warn("UDP one time auth header is too short");
@@ -190,10 +192,10 @@ void UDPRelay::_handle_server()
         _eventloop->add(relay.get_socket(), EPOLLIN, this);
     }
 
-    if (de_data.size() == header_length + ONETIMEAUTH_BYTES)
+    if (de_data.size() == header_length + one_time_auth_size)
         return;
     
-    auto ret = sendto(relay.get_socket(), &de_data[0] + header_length, de_data.size() - header_length - ONETIMEAUTH_BYTES, 
+    auto ret = sendto(relay.get_socket(), &de_data[0] + header_length, de_data.size() - header_length - one_time_auth_size, 
                       0, (struct sockaddr *)&addrs.ai_addr[0], addrs.ai_addrlen);
     if (ret < 0)
     {
