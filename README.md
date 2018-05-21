@@ -37,7 +37,6 @@ ssc++
                                  aes-{128|192|256}-ocb, camellia-{128|192|256}-cfb,
                                  des-cfb, idea-cfb, rc2-cfb, seed-cfb, rc4,
                                  rc4-md5, table, bf-cfb, cast5-cfb
-    -a, --one_time_auth      one time auth
     -t, --timeout            timeout in seconds, default: 300
         --fast_open          use TCP_FASTOPEN, requires Linux 3.7+
         --workers            number of progress to run, default: 1
