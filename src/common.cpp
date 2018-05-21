@@ -236,34 +236,6 @@ std::vector<std::string> rsplit(const std::string &str, const std::string &sep, 
     return std::vector<std::string>(vec_str.rbegin(), vec_str.rend());
 }
 
-void onetimeauth_gen(const std::vector<unsigned char> &data, const std::vector<unsigned char> &key, std::vector<unsigned char> &out)
-{
-    unsigned int out_size = 0;
-    out.resize(EVP_MD_size(EVP_sha1()));
-    HMAC(EVP_sha1(), &key[0], key.size(), &data[0], data.size(), &out[0], &out_size);
-    out.resize(ONETIMEAUTH_BYTES);
-}
-
-
-bool onetimeauth_verify(const unsigned char *hash, const size_t hash_len, const unsigned char *data, const size_t data_len, 
-                        const std::vector<unsigned char> &key)
-{
-    unsigned int out_size = 0;
-    std::vector<unsigned char> out(EVP_MD_size(EVP_sha1()));
-    HMAC(EVP_sha1(), &key[0], key.size(), data, data_len, &out[0], &out_size);
-
-    if (out_size < hash_len)
-        return false;
-
-     for (size_t i = 0; i < hash_len; i++)
-     {
-         if (*(hash + i) != out[i])
-            return false;
-     }
-
-     return true;
-}
-
 /*
 *    -------+----------+----------+
 *    | ATYP | DST.ADDR | DST.PORT |

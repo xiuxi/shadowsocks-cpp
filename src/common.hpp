@@ -27,13 +27,9 @@ std::string strip(const std::string &str, const std::string &chars);
 std::vector<std::string> split(const std::string &str, const std::string &sep, int max_split = -1);
 
 std::vector<std::string> rsplit(const std::string &str, const std::string &sep, int max_split = -1);
-
-void onetimeauth_gen(const std::vector<unsigned char> &data, const std::vector<unsigned char> &key, std::vector<unsigned char> &out);
-
-bool onetimeauth_verify(const unsigned char *hash, const size_t hash_len, const unsigned char *data, const size_t data_len, 
-                        const std::vector<unsigned char> &key);
                         
 std::tuple<unsigned char, std::string, unsigned short int, unsigned int> parse_header(const std::vector<unsigned char> &data);
+
 void pack_addr(std::string &address, std::vector<unsigned char> &addr);
 
 AddrInfo getaddrinfo(const std::string &addr, const unsigned short int port, const int ai_family, const int socktype, 
@@ -67,7 +63,7 @@ type_value copy_vector_to_value(const std::vector<type_vector> &vec, const size_
 
 
 template<typename type_value, typename type_array_point>
-type_value copy_array_to_value(const  type_array_point *array, const size_t pos)
+type_value copy_array_to_value(const type_array_point *array, const size_t pos)
 {
     union
     {

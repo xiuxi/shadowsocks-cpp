@@ -11,12 +11,6 @@
 #include "common.hpp"
 #include "udprelay.hpp"
 
-#define ONETIMEAUTH_BYTES  10
-#define ONETIMEAUTH_CHUNK_BYTES  12
-#define ONETIMEAUTH_CHUNK_DATA_LEN  2
-
-#define ADDRTYPE_AUTH  0x10
-
 #define BUF_SIZE  65536
 
 /*
@@ -42,7 +36,6 @@
 # +-------+--------------+
 */
 
-
 static std::string client_key(const std::pair<std::string, unsigned short int> &source_addr, const int server_af)
 {
     //notice this is server af, not dest af
@@ -58,8 +51,6 @@ UDPRelay::UDPRelay(nlohmann::json &config, const std::shared_ptr<DNSResolver> &d
     _password = config["password"];
     _method = config["method"];
     _listen_port = config["server_port"];
-    _ota_enable = config["one_time_auth"];
-    _ota_enable_session = _ota_enable;
     _stat_callback = stat_callback;
     
     _sockets_cache = LRUCache<std::string, Socket, Socket_hash>(double(config["timeout"]), 
@@ -129,38 +120,12 @@ void UDPRelay::_handle_server()
     if (std::get<1>(header_result).empty()) 
         return;
 
-    auto addrtype = std::get<0>(header_result);
+    //auto addrtype = std::get<0>(header_result);
     auto dest_addr = std::get<1>(header_result);
     auto dest_port = std::get<2>(header_result);
     auto header_length = std::get<3>(header_result);
     el_log->info("udp data to %v:%v from %v:%v", dest_addr, dest_port, recv_addr.first, recv_addr.second);
     
-    _ota_enable_session = (addrtype & ADDRTYPE_AUTH);
-    int one_time_auth_size = 0;
-    if (_ota_enable && !_ota_enable_session)
-    {
-        el_log->warn("client one time auth is required");
-        return;
-    }
-    if (_ota_enable_session)
-    {
-        one_time_auth_size = ONETIMEAUTH_BYTES;
-        if (de_data.size() < header_length + ONETIMEAUTH_BYTES)
-        {
-            el_log->warn("UDP one time auth header is too short");
-            return;
-        }
-
-        unsigned char *_hash = &de_data[de_data.size() - ONETIMEAUTH_BYTES];
-        std::copy(iv.begin(), iv.end(), std::back_inserter(key));
-
-        if (!onetimeauth_verify(_hash, ONETIMEAUTH_BYTES, &de_data[0], de_data.size() - ONETIMEAUTH_BYTES, key))
-        {
-            el_log->warn("UDP one time auth fail");
-            return;
-        }
-    }
-
     AddrInfo addrs;
     addrs = _dns_cache.get(dest_addr, addrs);
     if (addrs.empty())
@@ -192,11 +157,10 @@ void UDPRelay::_handle_server()
         _eventloop->add(relay.get_socket(), EPOLLIN, this);
     }
 
-    if (de_data.size() == header_length + one_time_auth_size)
+    if (de_data.size() == header_length)
         return;
     
-    auto ret = sendto(relay.get_socket(), &de_data[0] + header_length, de_data.size() - header_length - one_time_auth_size, 
-                      0, (struct sockaddr *)&addrs.ai_addr[0], addrs.ai_addrlen);
+    auto ret = sendto(relay.get_socket(), &de_data[0] + header_length, de_data.size() - header_length, 0, (struct sockaddr *)&addrs.ai_addr[0], addrs.ai_addrlen);
     if (ret < 0)
     {
         if (errno == EINPROGRESS || errno == EAGAIN)

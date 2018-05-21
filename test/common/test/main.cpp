@@ -3,6 +3,7 @@
 #include <sys/socket.h>
 #include <netdb.h>
 #include <arpa/inet.h>
+#include <unistd.h>
 
 #include <iostream>
 #include <string>
@@ -160,29 +161,65 @@ int main()
     assert(addr_udp.ai_family == AF_INET);
     assert(addr_udp.ai_socktype == SOCK_DGRAM);
     assert(addr_udp.ai_protocol == IPPROTO_UDP);
-    assert(addr_udp.ai_str_ip == "127.0.0.1");
+    assert(addr_udp.ai_addr_str == "127.0.0.1");
     assert(addr_udp.ai_port == 2333);
+    auto addr = (struct sockaddr_in *)&addr_udp.ai_addr[0];
+    assert(addr->sin_family == AF_INET);
+    assert(ntohs(addr->sin_port) == 2333);
+    auto fd = socket(addr_udp.ai_family, addr_udp.ai_socktype, addr_udp.ai_protocol);
+    assert(fd > 0);    
+    assert(bind(fd, (struct sockaddr *)addr, addr_udp.ai_addrlen) == 0);
+    close(fd);
+  
     
     auto addr_tcp = getaddrinfo("127.0.0.1", 2333, AF_UNSPEC, SOCK_STREAM, AI_PASSIVE, IPPROTO_TCP);
     assert(addr_tcp.ai_family == AF_INET);
     assert(addr_tcp.ai_socktype == SOCK_STREAM);
     assert(addr_tcp.ai_protocol == IPPROTO_TCP);
-    assert(addr_tcp.ai_str_ip == "127.0.0.1");
+    assert(addr_tcp.ai_addr_str == "127.0.0.1");
     assert(addr_tcp.ai_port == 2333);
+    addr = (struct sockaddr_in *)&addr_tcp.ai_addr[0];
+    assert(addr->sin_family == AF_INET);
+    assert(ntohs(addr->sin_port) == 2333);
+    fd = socket(addr_tcp.ai_family, addr_tcp.ai_socktype, addr_tcp.ai_protocol);
+    assert(fd > 0);    
+    assert(bind(fd, (struct sockaddr *)addr, addr_tcp.ai_addrlen) == 0);
+    close(fd);
     
     auto addrv6 = getaddrinfo("2404:6800:4005:805::1011", 2333, AF_UNSPEC, SOCK_STREAM, AI_PASSIVE, IPPROTO_TCP);
     assert(addrv6.ai_family == AF_INET6);
     assert(addrv6.ai_socktype == SOCK_STREAM);
     assert(addrv6.ai_protocol == IPPROTO_TCP);
-    assert(addrv6.ai_str_ip == "2404:6800:4005:805::1011");
+    assert(addrv6.ai_addr_str == "2404:6800:4005:805::1011");
     assert(addrv6.ai_port == 2333);
+    auto addr_v6 = (struct sockaddr_in6 *)&addrv6.ai_addr[0];
+    assert(addr_v6->sin6_family == AF_INET6);
+    assert(ntohs(addr_v6->sin6_port) == 2333);
+    fd = socket(addrv6.ai_family, addrv6.ai_socktype, addrv6.ai_protocol);
+    assert(fd > 0);    
+    if (bind(fd, (struct sockaddr *)addr_v6, addrv6.ai_addrlen) < 0)
+    {
+        cout << get_std_error_str() << endl;
+    }
+    close(fd);
     
     auto addr_domain = getaddrinfo("www.google.com", 2333, AF_UNSPEC, SOCK_STREAM, AI_PASSIVE, IPPROTO_TCP);
     assert(addr_domain.ai_family == AF_INET);
     assert(addr_domain.ai_socktype == SOCK_STREAM);
     assert(addr_domain.ai_protocol == IPPROTO_TCP);
-    assert((is_ip_str(addr_domain.ai_str_ip) == AF_INET || is_ip_str(addr_domain.ai_str_ip) == AF_INET6));
+    assert((is_ip_str(addr_domain.ai_addr_str) == AF_INET || is_ip_str(addr_domain.ai_addr_str) == AF_INET6));
     assert(addr_domain.ai_port == 2333);
+    addr_v6 = (struct sockaddr_in6 *)&addr_domain.ai_addr[0];
+    assert(addr_v6->sin6_family == AF_INET6 || addr_v6->sin6_family == AF_INET);
+    assert(ntohs(addr_v6->sin6_port) == 2333);
+    fd = socket(addr_domain.ai_family, addr_domain.ai_socktype, addr_domain.ai_protocol);
+    assert(fd > 0);    
+    if (bind(fd, (struct sockaddr *)&addr_domain.ai_addr[0], addr_domain.ai_addrlen) < 0)
+    {
+        cout << get_std_error_str() << endl;
+    }
+    close(fd);
+    
     
     //uint128
     uint128 a(1);

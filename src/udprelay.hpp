@@ -66,8 +66,6 @@ private:
     std::string _password;
     std::string _method;
     unsigned short int _listen_port;
-    bool _ota_enable;
-    int _ota_enable_session;
     std::shared_ptr<EventLoop> _eventloop;
     IPNetwork _forbidden_iplist;
     std::function<void(const unsigned short int port, const size_t data_len)> _stat_callback;

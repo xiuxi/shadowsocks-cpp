@@ -22,7 +22,7 @@ Socket::Socket()
 
 Socket::Socket(const int domain, const int type, const int protocol): _domain(domain), _socket_fd(-1)
 {   
-    if (domain != AF_INET && domain != AF_INET6 && domain && AF_UNIX && domain != AF_LOCAL)
+    if (domain != AF_INET && domain != AF_INET6 && domain && AF_UNIX)
         throw ExceptionInfo("no support domain");
     
     _socket_fd = socket(domain, type, protocol);  
@@ -35,12 +35,15 @@ Socket::Socket(const int domain, const int type, const int protocol): _domain(do
                   
 Socket::Socket(const Socket &s): _domain(s._domain), _ref_count(s._ref_count), _socket_fd(s._socket_fd), _addrs(s._addrs)
 {
-    ++*_ref_count;
+	if (s) 
+        ++*_ref_count;
 }
 
 Socket& Socket::operator=(const Socket &s)
 {
-    ++*s._ref_count; 
+    if (s)
+        ++*s._ref_count; 
+    
     _destroy();
     _domain = s._domain; 
 	_ref_count = s._ref_count;
@@ -93,7 +96,7 @@ void Socket::_destroy()
         else if (_domain == AF_INET6 && _addrs._addr_in6)      
             delete _addrs._addr_in6;
         
-        else if ((_domain == AF_UNIX || _domain == AF_LOCAL) && _addrs._addr_un)
+        else if ((_domain == AF_UNIX) && _addrs._addr_un)
             delete _addrs._addr_un;
 
         _addrs._addr_in = nullptr;
@@ -118,7 +121,7 @@ Socket Socket::accept(int *error_code) const noexcept
         new_socket._addrs._addr_in6 = new (struct sockaddr_in6);
         new_socket_fd = ::accept(_socket_fd, (struct sockaddr *)new_socket._addrs._addr_in6, &length);
     }
-    else if (_domain == AF_UNIX || _domain == AF_LOCAL)
+    else if (_domain == AF_UNIX)
     {
         socklen_t length = sizeof(struct sockaddr_un);
         new_socket._addrs._addr_un = new (struct sockaddr_un);
@@ -161,7 +164,7 @@ bool Socket::bind(const std::string &addr, const unsigned short int port, int *e
         inet_pton(AF_INET6, addr.c_str(), &_addrs._addr_in6->sin6_addr);
         flag = ::bind(_socket_fd, (struct sockaddr *)_addrs._addr_in6, sizeof(struct sockaddr_in6));
     }
-    else if (_domain == AF_UNIX || _domain == AF_LOCAL)
+    else if (_domain == AF_UNIX)
     {
         _addrs._addr_un = new (struct sockaddr_un);
         memset(_addrs._addr_un, 0, sizeof(struct sockaddr_un));
@@ -197,7 +200,7 @@ bool Socket::connect(const std::string &addr, const unsigned short int port, int
         inet_pton(AF_INET6, addr.c_str(), &_addrs._addr_in6->sin6_addr);
         flag = ::connect(_socket_fd, (struct sockaddr *)_addrs._addr_in6, sizeof(struct sockaddr_in6));
     }
-    else if (_domain == AF_UNIX || _domain == AF_LOCAL)
+    else if (_domain == AF_UNIX)
     {
         _addrs._addr_un = new (struct sockaddr_un);
         memset(_addrs._addr_un, 0, sizeof(struct sockaddr_un));
@@ -227,7 +230,7 @@ std::pair<std::string, unsigned short int> Socket::getpeername() const
         inet_ntop(AF_INET, &_addrs._addr_in6->sin6_addr, &addr.first[0], INET6_ADDRSTRLEN);
         addr.second = ntohs(_addrs._addr_in6->sin6_port);
     } 
-    else if ((_domain == AF_UNIX || _domain == AF_LOCAL) && _addrs._addr_un)
+    else if (_domain == AF_UNIX && _addrs._addr_un)
     {
         std::copy(_addrs._addr_un->sun_path, _addrs._addr_un->sun_path + sizeof(_addrs._addr_un->sun_path), std::back_inserter(addr.first));
         addr.second = 0; //meaningless for AF_UNIX
@@ -246,7 +249,6 @@ bool Socket::listen(const int backlog, int *error_code) const noexcept
     
     return flag == 0;
 }
-
 
 int Socket::read(unsigned char *buffer, const size_t max_len, int *error_code) const noexcept
 {
@@ -376,7 +378,7 @@ size_t Socket::recvfrom(unsigned char *buffer, const size_t len, std::pair<std::
                       
         addr_info.second = ntohs(addr_in6->sin6_port);
     }
-    else if (_domain == AF_UNIX || _domain == AF_LOCAL)
+    else if (_domain == AF_UNIX)
     {
         auto addr_un = (struct sockaddr_un *)&addr[0];
         std::copy(addr_un->sun_path, addr_un->sun_path + sizeof(addr_un->sun_path), std::back_inserter(addr_info.first));
@@ -417,7 +419,7 @@ size_t Socket::sendto(const unsigned char *buffer, const size_t len, const std::
         
         ret = ::sendto(_socket_fd, buffer, len, flags, (struct sockaddr *)&addr6, sizeof(struct sockaddr_in6));
     }
-    else if (_domain == AF_UNIX || _domain == AF_LOCAL)
+    else if (_domain == AF_UNIX)
     {
         struct sockaddr_un addr_un;
         memset(&addr_un, 0, sizeof(struct sockaddr_un));

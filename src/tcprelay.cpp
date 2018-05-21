@@ -12,8 +12,6 @@
 #include "common.hpp"
 #include "tcprelay.hpp"
 
-#define access_array_uint16(array, pos) *((unsigned short int *)(&array[pos]))
-#define access_array_uint32(array, pos) *((unsigned int *)(&array[pos]))
 
 #define TIMEOUTS_CLEAN_SIZE  512
 
@@ -68,12 +66,6 @@
 
 #define BUF_SIZE  (32 * 1024)
 
-#define ONETIMEAUTH_BYTES  10
-#define ONETIMEAUTH_CHUNK_BYTES  12
-#define ONETIMEAUTH_CHUNK_DATA_LEN  2
-
-#define ADDRTYPE_AUTH  0x10
-
 class TCPRelayHandler : public DNSHandle
 {
 public:
@@ -92,15 +84,8 @@ public:
 private:
     void _update_stream(const int stream, const int status);
     bool _write_to_sock(const std::vector<unsigned char> &data, const Socket &sock);
-    void _handle_stage_connecting(const std::vector<unsigned char> &data);
     void _handle_stage_addr(const std::vector<unsigned char> &data);
-    Socket _create_remote_socket(const std::string &ip);
-    void _write_to_sock_remote(const std::vector<unsigned char> &data);
-    void _data_to_write_to_remote_append(const std::vector<unsigned char> &data);
-    void _data_to_write_to_local_append(const std::vector<unsigned char> &data);
-    void _ota_chunk_data(const unsigned char *data, const size_t len, std::function<void(const std::vector<unsigned char> &)> data_cb);
-    void _ota_chunk_data_gen(const std::vector<unsigned char> &data, std::vector<unsigned char> &out);
-    void _handle_stage_stream(const std::vector<unsigned char> &data);
+    Socket _create_remote_socket(const std::string &ip);    
     void _on_local_read();
     void _on_remote_read();
     void _on_local_write();
@@ -112,13 +97,6 @@ private:
     Socket _local_sock;
     Socket _remote_sock;
     int _stage = 0;
-
-    bool _ota_enable;
-    int _ota_enable_session;
-    std::vector<unsigned char> _ota_buff_head;
-    std::vector<unsigned char> _ota_buff_data;
-    size_t _ota_len = 0;
-    unsigned int _ota_chunk_idx = 0;
 
     std::vector<unsigned char> _data_to_write_to_local;
     std::vector<unsigned char> _data_to_write_to_remote;
@@ -134,8 +112,6 @@ TCPRelayHandler::TCPRelayHandler(TCPRelay *server, const Socket &local_sock, nlo
 {
     _server = server;
     _local_sock = local_sock;
-    _ota_enable = config["one_time_auth"];
-    _ota_enable_session = _ota_enable;
     _client_address = local_sock.getpeername();
     _local_sock.set_sock_blocking(false);
     _local_sock.setsockopt(IPPROTO_TCP, TCP_NODELAY, 1);               
@@ -260,7 +236,7 @@ void TCPRelayHandler::_handle_stage_addr(const std::vector<unsigned char> &data)
     if (std::get<1>(header_result).empty())
         throw ExceptionInfo("can not parse header");
         
-    auto addrtype = std::get<0>(header_result);
+    //auto addrtype = std::get<0>(header_result);
     auto remote_addr = std::get<1>(header_result);
     auto remote_port = std::get<2>(header_result);
     auto header_length = std::get<3>(header_result);
@@ -268,49 +244,12 @@ void TCPRelayHandler::_handle_stage_addr(const std::vector<unsigned char> &data)
     el::Logger* el_log = el::Loggers::getLogger("default");
     el_log->info("connecting %v:%v from %v:%v", remote_addr, remote_port, _client_address.first, _client_address.second);
     
-    _ota_enable_session = (addrtype & ADDRTYPE_AUTH);
-    if (_ota_enable && !_ota_enable_session)
-    {
-        LOG(WARNING) << "client one time auth is required";
-        return;
-    }
-    if (_ota_enable_session)
-    {
-        if (data.size() < header_length + ONETIMEAUTH_BYTES)
-        {
-            LOG(WARNING) << "one time auth header is too short";
-            return;
-        }
-       
-        const unsigned char *_hash = &data[header_length];
-        const unsigned char *_data = &data[0];
-        std::vector<unsigned char> key_1 = _cryptor.get_decipher_iv();
-        const std::vector<unsigned char> &key_2 = _cryptor.get_key();
-        std::copy(key_2.begin(), key_2.end(), std::back_inserter(key_1));
-        if (!onetimeauth_verify(_hash, ONETIMEAUTH_BYTES, _data, header_length, key_1))
-        {
-            LOG(WARNING) << "one time auth fail";
-            return;
-        }
-        header_length += ONETIMEAUTH_BYTES;
-    }
-
     _remote_address = std::make_pair(remote_addr, remote_port);
     
     // pause reading
     _update_stream(STREAM_UP, WAIT_STATUS_WRITING);
     _stage = STAGE_DNS;
-
-    if (_ota_enable_session)
-    {
-        _ota_chunk_data(&data[0] + header_length, data.size() - header_length, 
-                        std::bind(&TCPRelayHandler::_data_to_write_to_remote_append, this, std::placeholders::_1));
-    }
-    else if (data.size() > header_length)
-    {
-        std::copy(data.begin() + header_length, data.end(), std::back_inserter(_data_to_write_to_remote));
-    }
-
+    std::copy(data.begin() + header_length, data.end(), std::back_inserter(_data_to_write_to_remote));
     _server->_dns_resolver->resolve(remote_addr, this);
 }
 
@@ -338,7 +277,7 @@ void TCPRelayHandler::handle_dns_resolved(const std::string &hostname, const std
     }
     if (hostname.empty() || ip.empty())
     {
-        LOG(DEBUG) << "handle_dns_resolved hostname empty or ip empty";
+        LOG(DEBUG) << "hostname empty or ip empty";
         _destroy();
         return;
     }
@@ -368,107 +307,6 @@ void TCPRelayHandler::handle_dns_resolved(const std::string &hostname, const std
     _update_stream(STREAM_DOWN, WAIT_STATUS_READING);
 }
 
-void TCPRelayHandler::_write_to_sock_remote(const std::vector<unsigned char> &data)
-{
-    _write_to_sock(data, _remote_sock);
-}
-
-void TCPRelayHandler::_data_to_write_to_remote_append(const std::vector<unsigned char> &data)
-{
-    std::copy(data.begin(), data.end(), std::back_inserter(_data_to_write_to_remote));
-}
-
-void TCPRelayHandler::_data_to_write_to_local_append(const std::vector<unsigned char> &data)
-{
-    std::copy(data.begin(), data.end(), std::back_inserter(_data_to_write_to_local));
-}
-
-void TCPRelayHandler::_ota_chunk_data(const unsigned char *data, const size_t len, std::function<void(const std::vector<unsigned char> &)> data_cb)
-{
-    std::vector<unsigned char> unchunk_data;
-    size_t pos = 0;
-    while (pos < len)
-    {
-        if (_ota_len == 0)
-        {
-            // get DATA.LEN + HMAC-SHA1
-            int length = ONETIMEAUTH_CHUNK_BYTES - _ota_buff_head.size();
-            std::copy(&data[0], &data[0] + length, std::back_inserter(_ota_buff_head));
-            
-            pos += length;
-            if (_ota_buff_head.size() < ONETIMEAUTH_CHUNK_BYTES)
-                return;
-            _ota_len = ntohs(access_array_uint16(_ota_buff_head, 0));
-        }
-
-        size_t length = std::min(_ota_len - _ota_buff_data.size(), len);
-        std::copy(&data[pos], &data[pos] + length, std::back_inserter(_ota_buff_data));
-        pos += length;
-        if (_ota_buff_data.size() == _ota_len)
-        {
-            //get a chunk data
-            unsigned char * _hash = &_ota_buff_head[ONETIMEAUTH_CHUNK_DATA_LEN];
-            unsigned char * _data = &_ota_buff_data[0];
-            unsigned int index = htonl(_ota_chunk_idx);
-            auto key = _cryptor.get_decipher_iv();
-            unsigned char *p = (unsigned char *)&index;
-            for (size_t i = 0; i < sizeof(unsigned int); i++)
-            {
-                key.push_back(*p++);
-            }
-            if (!onetimeauth_verify(_hash, ONETIMEAUTH_BYTES, _data, _ota_len, key))
-            {
-                LOG(WARNING) << "one time auth fail, drop chunk";
-            }
-            else
-            {
-                std::copy(_ota_buff_data.begin(), _ota_buff_data.end(), std::back_inserter(unchunk_data));
-                _ota_chunk_idx += 1;
-            }
-            _ota_buff_head.clear();
-            _ota_buff_data.clear(); 
-            _ota_len = 0;
-        }
-    }
-    
-    data_cb(unchunk_data);
-}
-
-void TCPRelayHandler::_ota_chunk_data_gen(const std::vector<unsigned char> &data, std::vector<unsigned char> &out)
-{
-    unsigned short int data_len = htons(data.size());
-    unsigned int index = htonl(_ota_chunk_idx);
-    std::vector<unsigned char> key = _cryptor.get_cipher_iv();
-    unsigned char *p = (unsigned char *)&index;
-    for (size_t i = 0; i < sizeof(unsigned int); i++)
-    {
-        key.push_back(*p++);
-    }
-    std::vector<unsigned char> sha1_10;
-    onetimeauth_gen(data, key, sha1_10);
-    _ota_chunk_idx += 1;
-
-    out.push_back(data_len & 0xff);
-    out.push_back(data_len >> 8 & 0xff);
-    std::copy(sha1_10.begin(), sha1_10.end(), std::back_inserter(out));
-    std::copy(data.begin(), data.end(), std::back_inserter(out));
-}
- 
-void TCPRelayHandler::_handle_stage_connecting(const std::vector<unsigned char> &data)
-{
-    if (_ota_enable_session)
-        _ota_chunk_data(&data[0], data.size(), std::bind(&TCPRelayHandler::_data_to_write_to_remote_append, this, std::placeholders::_1));
-    else
-        std::copy(data.begin(), data.end(), std::back_inserter(_data_to_write_to_remote));
-}
- 
-void TCPRelayHandler::_handle_stage_stream(const std::vector<unsigned char> &data)
-{
-    if (_ota_enable_session)
-        _ota_chunk_data(&data[0], data.size(), std::bind(&TCPRelayHandler::_write_to_sock_remote, this, std::placeholders::_1));
-    else
-        _write_to_sock(data, _remote_sock);
-}
 
 void TCPRelayHandler::_on_local_read()
 {
@@ -519,12 +357,12 @@ void TCPRelayHandler::_on_local_read()
     if (decrypt_data.empty())                       
         return;
 
-    if (_stage == STAGE_STREAM)
-        _handle_stage_stream(decrypt_data);
+    if (_stage == STAGE_STREAM)   
+        _write_to_sock(data, _remote_sock);
         
     else if (_stage == STAGE_CONNECTING)
-        _handle_stage_connecting(decrypt_data);
-  
+        std::copy(data.begin(), data.end(), std::back_inserter(_data_to_write_to_remote));
+
     else if (_stage == STAGE_INIT)
         _handle_stage_addr(decrypt_data);
 }

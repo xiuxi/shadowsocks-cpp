@@ -36,7 +36,6 @@ void init_cmdline(cmdline::parser &cmd)
                                des-cfb, idea-cfb, rc2-cfb, seed-cfb, rc4,\n\
                                rc4-md5, table, bf-cfb, cast5-cfb",
                         false, "xchacha20-ietf-poly1305");                            
-    cmd.add("one_time_auth", 'a', "one time auth");
     cmd.add<int>("timeout", 't', "timeout in seconds, default: 300", false, 300);  
     cmd.add("fast_open", '\0', "use TCP_FASTOPEN, requires Linux 3.7+");
     cmd.add<int>("workers", '\0', "number of progress to run, default: 1", false, 1);    
@@ -125,12 +124,7 @@ nlohmann::json get_config(const cmdline::parser &cmd)
             config.clear();
         }
     }
-    else
-    {
-        LOG(INFO) << "open config file error";
-    }
-   
-    
+       
     if (config["server_port"].is_null() || cmd.get<int>("server_port") != 8388)
     {
         config["server_port"] = {cmd.get<int>("server_port")}; 
@@ -219,15 +213,6 @@ nlohmann::json get_config(const cmdline::parser &cmd)
     else if (config["verbose"].is_null())
     {
         config["verbose"] = 0; 
-    }
-    
-    if (cmd.exist("one_time_auth"))
-    {
-        config["one_time_auth"] = true;
-    }
-    else if (config["one_time_auth"] .is_null())
-    {
-        config["one_time_auth"]  = false; 
     }
     
     if (cmd.exist("fast_open"))

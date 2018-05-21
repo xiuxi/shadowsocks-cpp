@@ -394,22 +394,22 @@ AddrInfo getaddrinfo(const std::string &addr, const unsigned short int port, con
             continue;
         close(sfd); 
 
-        if (rp->ai_family == AF_INET)
+        if (rp->ai_family == AF_INET && rp->ai_addrlen == sizeof(struct sockaddr_in))
         {
             auto addrv4 = (struct sockaddr_in *)rp->ai_addr;
             addrs.ai_addr_str.resize(INET_ADDRSTRLEN, 0);
             if (!inet_ntop(rp->ai_family, &addrv4->sin_addr, &addrs.ai_addr_str[0], INET_ADDRSTRLEN))
-                return addrs;
+                continue;
 
             addrs.ai_port = ntohs(addrv4->sin_port);
             break;
         }
-        else if (rp->ai_family == AF_INET6)
+        else if (rp->ai_family == AF_INET6 && rp->ai_addrlen == sizeof(struct sockaddr_in6))
         {
             auto addrv6 = (struct sockaddr_in6 *)rp->ai_addr;
             addrs.ai_addr_str.resize(INET6_ADDRSTRLEN, 0);
             if (!inet_ntop(rp->ai_family, &addrv6->sin6_addr, &addrs.ai_addr_str[0], INET6_ADDRSTRLEN))
-                return addrs;
+                continue;
             
             addrs.ai_port = ntohs(addrv6->sin6_port);
             break;
