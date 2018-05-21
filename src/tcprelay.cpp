@@ -358,10 +358,10 @@ void TCPRelayHandler::_on_local_read()
         return;
 
     if (_stage == STAGE_STREAM)   
-        _write_to_sock(data, _remote_sock);
+        _write_to_sock(decrypt_data, _remote_sock);
         
     else if (_stage == STAGE_CONNECTING)
-        std::copy(data.begin(), data.end(), std::back_inserter(_data_to_write_to_remote));
+        std::copy(decrypt_data.begin(), decrypt_data.end(), std::back_inserter(_data_to_write_to_remote));
 
     else if (_stage == STAGE_INIT)
         _handle_stage_addr(decrypt_data);
