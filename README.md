@@ -45,7 +45,7 @@ ssc++
         --forbidden_ip       comma seperated IP list forbidden to connect, default: 127.0.0.0/8,::1/128
     -d, --daemon             daemon mode: start/stop/restart, default: null
         --pid_file           pid file for daemon mode, default: /var/run/shadowsocksc++.pid
-        --log_file           pid file for daemon mode, default: /var/log/shadowsocksc++.log
+        --log_file           log file for daemon mode, default: /var/log/shadowsocksc++.log
     -q, --quiet              quiet mode, only show warnings/info
     -v, --verbose            verbose mode, show more information
         --prefer_ipv6        resolve ipv6 address first
