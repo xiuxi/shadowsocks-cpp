@@ -44,7 +44,7 @@ void init_cmdline(cmdline::parser &cmd)
     cmd.add<std::string>("forbidden_ip", '\0', "comma seperated IP list forbidden to connect, default: 127.0.0.0/8,::1/128", false, "127.0.0.0/8,::1/128");
     cmd.add<std::string>("daemon", 'd', "daemon mode: start/stop/restart, default: null", false, "", cmdline::oneof<std::string>("start", "stop", "restart"));
     cmd.add<std::string>("pid_file", '\0', "pid file for daemon mode, default: /var/run/shadowsocksc++.pid", false, "/var/run/shadowsocksc++.pid");     
-    cmd.add<std::string>("log_file", '\0', "pid file for daemon mode, default: /var/log/shadowsocksc++.log", false, "/var/log/shadowsocksc++.log");          
+    cmd.add<std::string>("log_file", '\0', "log file for daemon mode, default: /var/log/shadowsocksc++.log", false, "/var/log/shadowsocksc++.log");          
     cmd.add("quiet", 'q', "quiet mode, only show warnings/info");
     cmd.add("verbose", 'v', "verbose mode, show more information"); 
     cmd.add("prefer_ipv6", '\0', "resolve ipv6 address first");
