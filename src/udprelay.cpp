@@ -13,6 +13,8 @@
 
 #define BUF_SIZE  65536
 
+#define ADDRTYPE_AUTH  0x10
+
 /*
 # shadowsocks UDP Request (before encrypted)
 # +------+----------+----------+----------+
@@ -120,11 +122,17 @@ void UDPRelay::_handle_server()
     if (std::get<1>(header_result).empty()) 
         return;
 
-    //auto addrtype = std::get<0>(header_result);
+    auto addrtype = std::get<0>(header_result);
     auto dest_addr = std::get<1>(header_result);
     auto dest_port = std::get<2>(header_result);
     auto header_length = std::get<3>(header_result);
     el_log->info("udp data to %v:%v from %v:%v", dest_addr, dest_port, recv_addr.first, recv_addr.second);
+    
+    if (addrtype & ADDRTYPE_AUTH)
+    {
+        LOG(WARNING) << "client one time auth is required, but should using aead encryption method instead like xchacha20-ietf-poly1305, ignore the data.";
+        return;
+    }
     
     AddrInfo addrs;
     addrs = _dns_cache.get(dest_addr, addrs);
