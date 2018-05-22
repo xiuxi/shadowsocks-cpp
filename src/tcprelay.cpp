@@ -66,6 +66,8 @@
 
 #define BUF_SIZE  (32 * 1024)
 
+#define ADDRTYPE_AUTH  0x10
+
 class TCPRelayHandler : public DNSHandle
 {
 public:
@@ -236,14 +238,19 @@ void TCPRelayHandler::_handle_stage_addr(const std::vector<unsigned char> &data)
     if (std::get<1>(header_result).empty())
         throw ExceptionInfo("can not parse header");
         
-    //auto addrtype = std::get<0>(header_result);
+    auto addrtype = std::get<0>(header_result);
     auto remote_addr = std::get<1>(header_result);
     auto remote_port = std::get<2>(header_result);
     auto header_length = std::get<3>(header_result);
     
     el::Logger* el_log = el::Loggers::getLogger("default");
     el_log->info("connecting %v:%v from %v:%v", remote_addr, remote_port, _client_address.first, _client_address.second);
-    
+  
+    if (addrtype & ADDRTYPE_AUTH)
+    {
+        LOG(WARNING) << "client one time auth is required, but should using aead encryption method instead like xchacha20-ietf-poly1305, ignore the connection.";
+        return;
+    }
     _remote_address = std::make_pair(remote_addr, remote_port);
     
     // pause reading
