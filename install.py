@@ -16,8 +16,11 @@ def install_opensll():
     os.chdir(cur_dir + os.sep + "temp" + os.sep + "openssl-1.1.0h")
     os.system("./config")
     os.system("make")
-    os.system("sudo make install")
-   
+    #os.system("sudo make install") 
+    #install lib and head files not doc
+    os.system("sudo make install_sw")
+    os.system("sudo make install_ssldirs")   
+
     os.chdir(cur_dir)
     os.system("rm -rf temp")
     
