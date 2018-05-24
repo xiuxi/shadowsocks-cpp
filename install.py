@@ -14,7 +14,7 @@ def install_opensll():
     os.system("wget https://www.openssl.org/source/openssl-1.1.0h.tar.gz")
     os.system("tar zxvf openssl-1.1.0h.tar.gz")
     os.chdir(cur_dir + os.sep + "temp" + os.sep + "openssl-1.1.0h")
-    os.system("./config")
+    os.system("./config --prefix=/usr/local --libdir=lib --includedir=include --openssldir=/usr/local/ssl")
     os.system("make")
     #os.system("sudo make install") 
     #install lib and head files not doc
@@ -38,7 +38,7 @@ def install_libsodium():
     os.chdir(cur_dir + os.sep + "temp")
     os.system(libdium_download)
     os.chdir(cur_dir + os.sep + "temp" + os.sep + "libsodium")
-    os.system("./configure")
+    os.system("./configure --prefix=/usr/local --libdir=lib --includedir=include")
     os.system("make && make check")
     os.system("sudo make install")
    
