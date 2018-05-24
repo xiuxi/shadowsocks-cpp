@@ -2,6 +2,7 @@
 #coding=utf-8
 import os
 import sys
+import subprocess  
 
 def install_opensll():
     if os.path.exists("/usr/local/include/openssl") and os.path.exists("/usr/local/lib/libcrypto.so"):
@@ -53,29 +54,64 @@ def find_bin(name):
     paths = ["/usr/local/bin", "/usr/bin", "/bin"]
     for path in paths:
         if os.path.exists(path + os.sep + name):
-            return True, name
+            return True, path + os.sep + name 
             
     return False, None
 
 def check():
     gcc_compiler = find_bin("g++")
-    clang_compiler = find_bin("clang")
+    clang_compiler = find_bin("clang++")
     compiler = None
+    flag = False
+    version_str =  None
     if gcc_compiler[0]: 
         compiler = gcc_compiler[1]
+        try:
+            out_bytes = subprocess.check_output([compiler, "-dumpversion"])
+            version_str = out_bytes.decode('utf-8')
+            version_str = version_str[:-1] 
+            out_version = version_str.split(".")
+            if len(out_version) == 1:
+                out_bytes = subprocess.check_output([compiler, "-dumpfullversion"])
+                version_str = out_bytes.decode('utf-8')
+                version_str = version_str[:-1]
+                out_version = version_str.split(".")
+                if int(out_version[0]) == 4 and int(out_version[1]) >= 9 or int(out_version[0]) > 4:
+                    flag = True
+            elif len(out_version) >= 3:
+                if int(out_version[0]) == 4 and int(out_version[1]) >= 9 or int(out_version[0]) > 4:
+                    flag = True
+        except subprocess.CalledProcessError as e:
+            pass
     elif clang_compiler[0]:
         compiler = clang_compiler[1]
+        try:
+            out_bytes = subprocess.check_output([compiler, "--version"])
+            version_str = out_bytes.decode('utf-8')
+            out_version = version_str.split(" ")
+            version_str = version_str[:-1]
+            if len(out_version) >= 3:
+                version_str = out_version[2].split("-")[0]
+                out_version = version_str.split(".")
+                if int(out_version[0]) == 3 and int(out_version[1]) >= 4 or int(out_version[0]) > 3:
+                    flag = True                
+        except subprocess.CalledProcessError as e:
+            pass
     else:
-        print("you need to install g++ or clang")
+        print("you need to install g++ 4.9-7.2 (or later) or 3.4-5.0 (or later)")
         sys.exit(1)
     
+    if not flag:
+        print("the compiler is %s, veriosn is %s, but g++ 4.9-7.2 (or later) or clang 3.4-5.0 (or later) is required \nyou have to upgrade compiler." % (compiler, version_str))
+        sys.exit(1)
+     
+    os.system("export CXX=" + compiler)
     bin_names = ["git", "wget", "cmake", "make", "tar"]
     for key in bin_names:
         if not find_bin(key):
             print("you need to install %s first" % (key))
             sys.exit(1)
      
-    
 def install():
     check()
     
