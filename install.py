@@ -53,17 +53,29 @@ def find_bin(name):
     paths = ["/usr/local/bin", "/usr/bin", "/bin"]
     for path in paths:
         if os.path.exists(path + os.sep + name):
-            return True
+            return True, name
             
-    return False
+    return False, None
 
 def check():
-    bin_names = ["g++", "git", "wget", "cmake", "make", "tar"]
+    gcc_compiler = find_bin("g++")
+    clang_compiler = find_bin("clang")
+    compiler = None
+    if gcc_compiler[0]: 
+        compiler = gcc_compiler[1]
+    elif clang_compiler[0]:
+        compiler = clang_compiler[1]
+    else:
+        print("you need to install g++ or clang")
+        sys.exit(1)
+    
+    bin_names = ["git", "wget", "cmake", "make", "tar"]
     for key in bin_names:
         if not find_bin(key):
             print("you need to install %s first" % (key))
             sys.exit(1)
-            
+     
+    
 def install():
     check()
     
