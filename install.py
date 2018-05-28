@@ -88,8 +88,8 @@ def check():
         try:
             out_bytes = subprocess.check_output([compiler, "--version"])
             version_str = out_bytes.decode('utf-8')
-            out_version = version_str.split(" ")
             version_str = version_str[:-1]
+            out_version = version_str.split(" ")
             if len(out_version) >= 3:
                 version_str = out_version[2].split("-")[0]
                 out_version = version_str.split(".")
