@@ -17,7 +17,7 @@
 #include "server.hpp"
 #include "manager.hpp"
 
-static std::vector<int> children;
+static std::vector<pid_t> children;
 
 static void handler(int signum)
 {
@@ -143,7 +143,7 @@ void run_server(nlohmann::json &config)
         bool is_child = false;
         for (int i = 0; i < config["workers"].get<int>(); i++)
         {
-            int r = fork();
+            pid_t r = fork();
             if (r == 0)
             {
                 LOG(INFO) << "worker started";
