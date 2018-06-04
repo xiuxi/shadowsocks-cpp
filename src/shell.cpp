@@ -8,6 +8,7 @@
 
 #include "easylogging++.hpp"
 #include "cryptor.hpp"
+#include "common.hpp"
 #include "shell.hpp"
 
 static const std::string version()
@@ -81,7 +82,20 @@ static void check_config(nlohmann::json &config, const cmdline::parser &cmd)
         LOG(ERROR) << "DON\'T USE DEFAULT PASSWORD! Please change it in your config.json!";
         exit(1);
     }
-
+    
+    if (!config["dns_server's ip is invaild"].is_null())
+    {  
+        auto &dns = config["dns_server"];
+        for (auto &c : dns)
+        {
+            if (is_ip_str(c) < 0)
+            {
+                LOG(ERROR) << "the dns_server's ip is invaild";
+                exit(1);
+            }
+        }     
+    }
+    
     try
     {       
         try_cipher(config["password"], config["method"]);
