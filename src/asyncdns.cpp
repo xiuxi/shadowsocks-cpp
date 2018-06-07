@@ -607,8 +607,9 @@ void DNSResolver::_send_req(const std::string &hostname, const int qtype)
         {
             _sock.sendto(req, std::make_pair(server, 53));
         }
-        catch(...)
+        catch(std::exception &e)
         {
+            LOG(ERROR) << "_send_req : " << e.what();
             return;
         }
     }
