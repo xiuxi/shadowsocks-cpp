@@ -56,14 +56,8 @@ void load_sodium()
     if (sodium_loaded)
         return;
     
-    if (sodium_init() == -1) 
-    {
-        throw ExceptionInfo("init sodium error");
-    }
-    
     int fd;
     int c;
-
     if ((fd = open("/dev/random", O_RDONLY)) != -1) 
     {
         if (ioctl(fd, RNDGETENTCNT, &c) == 0 && c < 160) 
@@ -72,13 +66,17 @@ void load_sodium()
                        << "Installing the rng-utils/rng-tools, jitterentropy or haveged packages may help.\n"
                        << "On virtualized Linux environments, also consider using virtio-rng.\n"
                        << "The service will not start until enough entropy has been collected.\n";
-            throw ExceptionInfo("/dev/random error");
         }
         close(fd);
     }
     else 
     {
         throw SysError("can not open /dev/random: " + get_std_error_str());
+    }
+    
+    if (sodium_init() == -1) 
+    {
+        throw ExceptionInfo("init sodium error");
     }
     
     sodium_loaded = true;
