@@ -278,7 +278,7 @@ void TCPRelayHandler::handle_dns_resolved(const std::string &hostname, const std
     if (!error.empty())
     {
         el::Logger* el_log = el::Loggers::getLogger("default");
-        el_log->error("%v when handling connection from %v:%v", error, _client_address.first, _client_address.second);
+        el_log->debug("%v when handling connection from %v:%v", error, _client_address.first, _client_address.second);
         _destroy();
         return;
     }
@@ -289,6 +289,9 @@ void TCPRelayHandler::handle_dns_resolved(const std::string &hostname, const std
         return;
     }
 
+    el::Logger* el_log = el::Loggers::getLogger("default");
+    el_log->info("connected %v(%v):%v from %v:%v", _remote_address.first, ip, _remote_address.second, _client_address.first, _client_address.second);
+    
     _remote_address.first = ip;
     _remote_sock = _create_remote_socket(ip);
     _server->_eventloop->add(_remote_sock.get_socket(), EPOLLOUT | EPOLLRDHUP, _server);
@@ -311,7 +314,7 @@ void TCPRelayHandler::handle_dns_resolved(const std::string &hostname, const std
     
     _stage = STAGE_CONNECTING; 
     _update_stream(STREAM_UP, WAIT_STATUS_READWRITING);
-    _update_stream(STREAM_DOWN, WAIT_STATUS_READING);
+    _update_stream(STREAM_DOWN, WAIT_STATUS_READING);   
 }
 
 
