@@ -502,7 +502,15 @@ void TCPRelayHandler::handle_event(const int socket_fd, const unsigned int event
                 _on_local_write();
         }
         else
-            LOG(WARNING) << "unknown socket";
+        {
+            el::Logger* el_log = el::Loggers::getLogger("default"); 
+            el_log->warn("unknown socket: %v, locla socket: %v, remote socket: %v", socket_fd, _local_sock.get_socket(), _remote_sock.get_socket()); 
+            auto it = _server->_fd_to_handlers.find(socket_fd);
+            if (it != _server->_fd_to_handlers.end())
+                _server->_fd_to_handlers.erase(it);
+            
+            _destroy();
+        }
     }
     catch (std::exception &e) //catch all the exceptions
     {
