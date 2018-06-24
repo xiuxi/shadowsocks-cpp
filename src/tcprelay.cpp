@@ -698,8 +698,13 @@ void TCPRelay::handle_event(const int socket_fd, const unsigned int events)
             if (errno == EAGAIN || errno == EINPROGRESS || errno == EWOULDBLOCK)
                 return;
             else
-                LOG(DEBUG) << e.what();
+                LOG(ERROR) << "server socket error :" << e.what();
         }
+        catch (std::exception &e)
+        {
+            LOG(ERROR) << "server socket error :" << e.what();
+        }
+        
     }
     else
     {
