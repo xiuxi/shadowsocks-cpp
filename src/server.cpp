@@ -21,6 +21,7 @@ static std::vector<pid_t> children;
 
 static void handler(int signum)
 {
+    LOG(INFO) << "Received signal: " << signum << " to kill child process";
     for(auto &pid : children)
     {
         kill(pid, signum);
@@ -89,7 +90,11 @@ void run_server(nlohmann::json &config)
 
     auto run_server = [&]()
     {
-        auto sig_handler = [](int signum) { exit(0); }; //simply exit
+        auto sig_handler = [](int signum) 
+                         {
+                            LOG(INFO) << "Received signal: " << signum;
+                            exit(0); 
+                         }; 
         
         struct sigaction act_sigpipe;
         struct sigaction act_sig;
