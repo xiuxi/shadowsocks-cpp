@@ -508,6 +508,9 @@ void TCPRelayHandler::handle_event(const int socket_fd, const unsigned int event
         {
             el::Logger* el_log = el::Loggers::getLogger("default"); 
             el_log->warn("unknown socket: %v, locla socket: %v, remote socket: %v", socket_fd, _local_sock.get_socket(), _remote_sock.get_socket()); 
+            LOG(DEBUG) << "destroying unknown socket";
+            _server->_eventloop->remove(socket_fd);
+            close(socket_fd);
             auto it = _server->_fd_to_handlers.find(socket_fd);
             if (it != _server->_fd_to_handlers.end())
                 _server->_fd_to_handlers.erase(it);
