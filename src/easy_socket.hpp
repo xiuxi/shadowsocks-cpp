@@ -149,9 +149,9 @@ public:
     }
     
 private:
-    int _domain = -1;
-    size_t* _ref_count = nullptr;   
-    int _socket_fd = -1;
+    int _domain;
+    size_t* _ref_count;   
+    int _socket_fd;
     union
     {
         struct sockaddr_in *_addr_in;
