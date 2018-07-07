@@ -150,7 +150,7 @@ public:
     
 private:
     int _domain;
-    size_t* _ref_count;   
+    std::shared_ptr<size_t> _ref_count;
     int _socket_fd;
     union
     {
