@@ -24,7 +24,7 @@ Socket::Socket(const int domain, const int type, const int protocol): _domain(-1
 {   
     if (domain != AF_INET && domain != AF_INET6 && domain && AF_UNIX)
         throw ExceptionInfo("no support domain");
-    
+	
 	memset(&_addrs, 0, sizeof(_addrs));
 	_ref_count = new size_t(1);
 	
@@ -35,13 +35,13 @@ Socket::Socket(const int domain, const int type, const int protocol): _domain(-1
                   
 Socket::Socket(const Socket &s): _domain(s._domain), _ref_count(s._ref_count), _socket_fd(s._socket_fd), _addrs(s._addrs)
 {
-	if (s) 
+	if (_ref_count) 
 		++*_ref_count;
 }
 
 Socket& Socket::operator=(const Socket &s)
 {
-    if (s)
+    if (_ref_count)
         ++*s._ref_count; 
     
     _destroy();
