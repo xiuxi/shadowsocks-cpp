@@ -29,34 +29,11 @@ public:
     explicit operator bool() const { return _socket_fd == -1 ? false : true; }
     
 public:
-    Socket accept(int *error_code) const noexcept;
-    Socket accept() const
-    {
-        Socket socket = accept(nullptr);
-        if (!socket)
-            throw SysError("Socket::accept:can't accept new socket: " + get_std_error_str());
-        
-        return socket;
-    }
-    
-    bool bind(const std::string &addr, const unsigned short int port, int *error_code) noexcept;
-    void bind(const std::string &addr, const unsigned short int port)
-    {
-        if (!bind(addr, port, nullptr))
-            throw SysError("Socket:bind error: " + get_std_error_str());
-    }
-    
-    bool connect(const std::string &addr, const unsigned short int port, int *error_code) noexcept;
-    void connect(const std::string &addr, const unsigned short int port)
-    {
-        if (!connect(addr, port, nullptr))
-            throw SysError("Socket:connect error: " + get_std_error_str());
-    }
-    
+    Socket accept() const;
+    void bind(const std::string &addr, const unsigned short int port);
+    void connect(const std::string &addr, const unsigned short int port);
     const int get_socket() const { return _socket_fd; }
     std::pair<std::string, unsigned short int> getpeername() const; 
-    
-
     bool listen(const int backlog, int *error_code) const noexcept;
     void listen(const int backlog) const
     {
@@ -65,19 +42,6 @@ public:
     }
     
     int read(unsigned char *buffer, const size_t max_len, int *error_code) const noexcept;
-    int read(std::string &buffer, const size_t max_len, int *error_code) const noexcept
-    {
-        buffer.resize(max_len);
-        return read((unsigned char *)&buffer[0], max_len, error_code);
-    }
-    int read(std::vector<unsigned char> &buffer, const size_t max_len, int *error_code) const noexcept
-    {
-        buffer.resize(max_len);
-        return read(&buffer[0], max_len, error_code);
-    }
-
-    std::shared_ptr<unsigned char> read(const size_t max_len, int &out_len, int *error_code) const noexcept;
-    
     size_t read(unsigned char *buffer, const size_t max_len) const;
     size_t read(std::string &buffer, const size_t max_len) const
     {
@@ -107,16 +71,6 @@ public:
     }
     
     int write(const unsigned char *buffer, const size_t len, int *error_code) const noexcept;
-    int write(const std::string &buffer, int *error_code) const noexcept
-    {
-        return write((unsigned char *)buffer.c_str(), buffer.size(), error_code);
-    }
-
-    int write(const std::vector<unsigned char> &buffer, int *error_code) const noexcept
-    {
-        return write(&buffer[0], buffer.size(), error_code);
-    }
-    
     size_t write(const unsigned char *buffer, const size_t len) const;
     size_t write(const std::string &buffer) const
     {   

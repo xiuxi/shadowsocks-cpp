@@ -25,8 +25,8 @@ Socket::Socket(const int domain, const int type, const int protocol): _domain(-1
     if (domain != AF_INET && domain != AF_INET6 && domain && AF_UNIX)
         throw ExceptionInfo("no support domain");
 	
-	memset(&_addrs, 0, sizeof(_addrs));
-	_ref_count = new size_t(1);
+    memset(&_addrs, 0, sizeof(_addrs));
+    _ref_count = new size_t(1);
 	
     _socket_fd = socket(domain, type, protocol);  
     if (_socket_fd < 0)
@@ -104,7 +104,7 @@ void Socket::_destroy()
     }
 }
 
-Socket Socket::accept(int *error_code) const noexcept
+Socket Socket::accept() const 
 {
     Socket new_socket;
 	new_socket._ref_count = new size_t(1);
@@ -114,14 +114,14 @@ Socket Socket::accept(int *error_code) const noexcept
     {
         socklen_t length = sizeof(struct sockaddr_in);
         new_socket._addrs._addr_in = new (struct sockaddr_in);
-		memset(new_socket._addrs._addr_un, 0, sizeof(struct sockaddr_in));
+		memset(new_socket._addrs._addr_in, 0, sizeof(struct sockaddr_in));
         new_socket_fd = ::accept(_socket_fd, (struct sockaddr *)new_socket._addrs._addr_in, &length);
     }
     else if (_domain == AF_INET6)
     {
         socklen_t length = sizeof(struct sockaddr_in6);
         new_socket._addrs._addr_in6 = new (struct sockaddr_in6);
-		memset(new_socket._addrs._addr_un, 0, sizeof(struct sockaddr_in6));
+		memset(new_socket._addrs._addr_in6, 0, sizeof(struct sockaddr_in6));
         new_socket_fd = ::accept(_socket_fd, (struct sockaddr *)new_socket._addrs._addr_in6, &length);
     }
     else if (_domain == AF_UNIX)
@@ -132,89 +132,101 @@ Socket Socket::accept(int *error_code) const noexcept
         new_socket_fd = ::accept(_socket_fd, (struct sockaddr *)new_socket._addrs._addr_un, &length);         
     }
 
-    if (error_code)
-        *error_code = errno;
-    
     if (new_socket_fd < 0)
-        return new_socket;
-     
+        throw SysError("Socket::accept:can't accept new socket: " + get_std_error_str());
+        
     new_socket._domain = _domain;
     new_socket._socket_fd = new_socket_fd;
     
     return new_socket;
 }
     
-bool Socket::bind(const std::string &addr, const unsigned short int port, int *error_code) noexcept
+void Socket::bind(const std::string &addr, const unsigned short int port)
 {
     int flag = -1; 
     
     if (_domain == AF_INET)
     {
+        auto old_addr_ptr = _addrs._addr_in;
         _addrs._addr_in = new (struct sockaddr_in);
         memset(_addrs._addr_in, 0, sizeof(struct sockaddr_in));
         _addrs._addr_in->sin_family = AF_INET;
         _addrs._addr_in->sin_port = htons(port);
         inet_pton(AF_INET, addr.c_str(), &_addrs._addr_in->sin_addr);
         flag = ::bind(_socket_fd, (struct sockaddr *)_addrs._addr_in, sizeof(struct sockaddr_in));
+        if (old_addr_ptr)
+            delete old_addr_ptr;
     }
     else if (_domain == AF_INET6)
     {
+        auto old_addr_ptr = _addrs._addr_in6;
         _addrs._addr_in6 = new (struct sockaddr_in6);
         memset(_addrs._addr_in6, 0, sizeof(struct sockaddr_in6));
         _addrs._addr_in6->sin6_family = AF_INET6;
         _addrs._addr_in6->sin6_port = htons(port);
         inet_pton(AF_INET6, addr.c_str(), &_addrs._addr_in6->sin6_addr);
         flag = ::bind(_socket_fd, (struct sockaddr *)_addrs._addr_in6, sizeof(struct sockaddr_in6));
+        if (old_addr_ptr)
+            delete old_addr_ptr;
     }
     else if (_domain == AF_UNIX)
     {
+        auto old_addr_ptr = _addrs._addr_un;
         _addrs._addr_un = new (struct sockaddr_un);
         memset(_addrs._addr_un, 0, sizeof(struct sockaddr_un));
         _addrs._addr_un->sun_family = AF_UNIX;
         std::copy(addr.begin(), addr.end(), _addrs._addr_un->sun_path);
         flag = ::bind(_socket_fd, (struct sockaddr *)_addrs._addr_un, sizeof(struct sockaddr_un));
+        if (old_addr_ptr)
+            delete old_addr_ptr;
     }
-    if (error_code)
-        *error_code = errno;
-   
-    return flag == 0; 
+    
+    if (flag != 0)
+        throw SysError("Socket:bind error: " + get_std_error_str());
 }
 
-bool Socket::connect(const std::string &addr, const unsigned short int port, int *error_code) noexcept
+void Socket::connect(const std::string &addr, const unsigned short int port)
 {
     int flag = -1; 
     
     if (_domain == AF_INET)
     {
+        auto old_addr_ptr = _addrs._addr_in;
         _addrs._addr_in = new (struct sockaddr_in);
         memset(_addrs._addr_in, 0, sizeof(struct sockaddr_in));
         _addrs._addr_in->sin_family = AF_INET;
         _addrs._addr_in->sin_port = htons(port);
         inet_pton(AF_INET, addr.c_str(), &_addrs._addr_in->sin_addr);
         flag = ::connect(_socket_fd, (struct sockaddr *)_addrs._addr_in, sizeof(struct sockaddr_in));
+        if (old_addr_ptr)
+            delete old_addr_ptr;
     }
     else if (_domain == AF_INET6)
     {
+        auto old_addr_ptr = _addrs._addr_in6;
         _addrs._addr_in6 = new (struct sockaddr_in6);
         memset(_addrs._addr_in6, 0, sizeof(struct sockaddr_in6));
         _addrs._addr_in6->sin6_family = AF_INET6;
         _addrs._addr_in6->sin6_port = htons(port);
         inet_pton(AF_INET6, addr.c_str(), &_addrs._addr_in6->sin6_addr);
         flag = ::connect(_socket_fd, (struct sockaddr *)_addrs._addr_in6, sizeof(struct sockaddr_in6));
+        if (old_addr_ptr)
+            delete old_addr_ptr;
     }
     else if (_domain == AF_UNIX)
     {
+        auto old_addr_ptr = _addrs._addr_un;
         _addrs._addr_un = new (struct sockaddr_un);
         memset(_addrs._addr_un, 0, sizeof(struct sockaddr_un));
         _addrs._addr_un->sun_family = AF_UNIX;
         std::copy(addr.begin(), addr.end(), _addrs._addr_un->sun_path);
         flag = ::connect(_socket_fd, (struct sockaddr *)_addrs._addr_un, sizeof(struct sockaddr_un));
+        if (old_addr_ptr)
+            delete old_addr_ptr;
     }
     
-    if (error_code)
-        *error_code = errno;
-   
-    return flag == 0; 
+    if (flag != 0)
+        throw SysError("Socket:connect error: " + get_std_error_str());
 }
 
 std::pair<std::string, unsigned short int> Socket::getpeername() const
@@ -261,23 +273,6 @@ int Socket::read(unsigned char *buffer, const size_t max_len, int *error_code) c
     return len;
 }
 
-std::shared_ptr<unsigned char> Socket::read(const size_t max_len, int &out_len, int *error_code) const noexcept
-{
-    std::shared_ptr<unsigned char> buffer(new(std::nothrow) unsigned char[max_len], [](unsigned char *p) { delete[] p; });
-    if (!buffer)
-    {
-        if (error_code)
-            *error_code = -1;
-        return nullptr;
-    }
-    
-    out_len = read(buffer.get(), max_len, error_code);
-    if (out_len < 0)
-        return nullptr;
-    
-    return buffer;
-}
-  
 size_t Socket::read(unsigned char *buffer, const size_t max_len) const
 {
     int len = ::read(_socket_fd, buffer, max_len);
