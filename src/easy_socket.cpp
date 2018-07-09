@@ -106,19 +106,22 @@ void Socket::_destroy()
 
 Socket Socket::accept(int *error_code) const noexcept
 {
-    Socket new_socket; 
+    Socket new_socket;
+	new_socket._ref_count = new size_t(1);
     int new_socket_fd = -1;
     
     if (_domain == AF_INET)
     {
         socklen_t length = sizeof(struct sockaddr_in);
         new_socket._addrs._addr_in = new (struct sockaddr_in);
+		memset(new_socket._addrs._addr_un, 0, sizeof(struct sockaddr_in));
         new_socket_fd = ::accept(_socket_fd, (struct sockaddr *)new_socket._addrs._addr_in, &length);
     }
     else if (_domain == AF_INET6)
     {
         socklen_t length = sizeof(struct sockaddr_in6);
         new_socket._addrs._addr_in6 = new (struct sockaddr_in6);
+		memset(new_socket._addrs._addr_un, 0, sizeof(struct sockaddr_in6));
         new_socket_fd = ::accept(_socket_fd, (struct sockaddr *)new_socket._addrs._addr_in6, &length);
     }
     else if (_domain == AF_UNIX)
@@ -136,7 +139,6 @@ Socket Socket::accept(int *error_code) const noexcept
         return new_socket;
      
     new_socket._domain = _domain;
-    new_socket._ref_count = new size_t(1);
     new_socket._socket_fd = new_socket_fd;
     
     return new_socket;
