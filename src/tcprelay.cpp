@@ -542,7 +542,14 @@ void TCPRelayHandler::_destroy()
     if (_local_sock)
     {
         LOG(DEBUG) << "destroying local";
-        _server->_eventloop->remove(_local_sock.get_socket());
+        try
+        {
+            _server->_eventloop->remove(_local_sock.get_socket());
+        }
+        atch (std::exception &e)
+        {
+            LOG(ERROR) << e.what();
+        }
         
         auto it_local = _server->_fd_to_handlers.find(_local_sock.get_socket());
         if (it_local != _server->_fd_to_handlers.end())
@@ -551,7 +558,14 @@ void TCPRelayHandler::_destroy()
     if (_remote_sock)
     {
         LOG(DEBUG) << "destroying remote";
-        _server->_eventloop->remove(_remote_sock.get_socket());
+        try
+        {
+            _server->_eventloop->remove(_remote_sock.get_socket());
+        }
+        atch (std::exception &e)
+        {
+            LOG(ERROR) << e.what();
+        }
         
         auto it_remote = _server->_fd_to_handlers.find(_remote_sock.get_socket());
         if (it_remote != _server->_fd_to_handlers.end())
