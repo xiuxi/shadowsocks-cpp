@@ -520,10 +520,7 @@ void DNSResolver::handle_event(const int fd, const unsigned int event)
         if (event & EPOLLERR)
         {
             LOG(ERROR) << "dns socket err";
-            _loop->remove(fd);
-            
-            // TODO when dns server is IPv6
-            
+    
             //make sure the new dns socket will epoll even though the old socket close error
             Socket new_sock(AF_INET, SOCK_DGRAM, 0);            
             try
@@ -534,8 +531,9 @@ void DNSResolver::handle_event(const int fd, const unsigned int event)
             catch (SysError &error)
             {
                 LOG(ERROR) << error.what();
-                exit(1);
-            } 
+                return;
+            }
+            _loop->remove(fd);
             _sock = new_sock;
         }
         else
