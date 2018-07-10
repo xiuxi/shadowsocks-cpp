@@ -20,7 +20,7 @@ Socket::Socket(): _domain(-1), _ref_count(nullptr), _socket_fd(-1)
     memset(&_addrs, 0, sizeof(_addrs)); 
 }
 
-Socket::Socket(const int domain, const int type, const int protocol): _domain(-1), _ref_count(nullptr), _socket_fd(-1)
+Socket::Socket(const int domain, const int type, const int protocol): _domain(domain), _ref_count(nullptr), _socket_fd(-1)
 {   
     if (domain != AF_INET && domain != AF_INET6 && domain && AF_UNIX)
         throw ExceptionInfo("no support domain");
