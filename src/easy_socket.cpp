@@ -35,13 +35,13 @@ Socket::Socket(const int domain, const int type, const int protocol): _domain(do
                   
 Socket::Socket(const Socket &s): _domain(s._domain), _ref_count(s._ref_count), _socket_fd(s._socket_fd), _addrs(s._addrs)
 {
-	if (_ref_count) 
-		++*_ref_count;
+	if (s._ref_count) 
+		++*s._ref_count;
 }
 
 Socket& Socket::operator=(const Socket &s)
 {
-    if (_ref_count)
+    if (s._ref_count)
         ++*s._ref_count; 
     
     _destroy();
