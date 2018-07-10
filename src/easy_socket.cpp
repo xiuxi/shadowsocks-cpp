@@ -35,8 +35,8 @@ Socket::Socket(const int domain, const int type, const int protocol): _domain(do
                   
 Socket::Socket(const Socket &s): _domain(s._domain), _ref_count(s._ref_count), _socket_fd(s._socket_fd), _addrs(s._addrs)
 {
-	if (s._ref_count) 
-		++*s._ref_count;
+    if (s._ref_count) 
+        ++*s._ref_count;
 }
 
 Socket& Socket::operator=(const Socket &s)
@@ -46,8 +46,8 @@ Socket& Socket::operator=(const Socket &s)
     
     _destroy();
     _domain = s._domain; 
-	_ref_count = s._ref_count;
-	_socket_fd = s._socket_fd;
+    _ref_count = s._ref_count;
+    _socket_fd = s._socket_fd;
     _addrs = s._addrs;
 
     return *this; 
@@ -57,7 +57,7 @@ Socket::Socket(Socket &&s) : _domain(s._domain), _ref_count(s._ref_count), _sock
 {
     s._ref_count = nullptr;
     s._addrs._addr_in = nullptr;
-	s._socket_fd = -1;
+    s._socket_fd = -1;
 }
 
 Socket& Socket::operator=(Socket &&s)
