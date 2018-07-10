@@ -738,7 +738,10 @@ void TCPRelay::handle_event(const int socket_fd, const unsigned int events)
                 LOG(ERROR) << "server socket error :" << e.what();
                 exit(1);
             }
+            
+            return;
         }
+        
         try
         {
             LOG(DEBUG) << "accept";
