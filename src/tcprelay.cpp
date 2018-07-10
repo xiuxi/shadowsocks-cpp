@@ -713,7 +713,32 @@ void TCPRelay::handle_event(const int socket_fd, const unsigned int events)
     if (socket_fd == _server_socket.get_socket())
     { 
         if (events & EPOLLERR)
-            throw SysError("server_socket error");
+        {
+            try
+            {
+                _eventloop->remove(_server_socket.get_socket());
+                close(_server_socket.get_socket());
+                std::string listen_addr = _config["server"];
+                _server_socket = Socket(is_ip_str(listen_addr), SOCK_STREAM, 0);
+                _server_socket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1);
+                _server_socket.bind(listen_addr, _config["server_port"]);
+                _server_socket.set_sock_blocking(false);
+                if (_config["fast_open"])
+                {       
+                    if(!_server_socket.setsockopt(IPPROTO_TCP, 23, 5, nullptr))
+                    {
+                        LOG(WARNING) << "warning: fast open is not available";
+                        _config["fast_open"] = false;;
+                    }
+                }
+                _server_socket.listen(1024);
+            }
+            catch (std::exception &e)
+            {
+                LOG(ERROR) << "server socket error :" << e.what();
+                exit(1);
+            }
+        }
         try
         {
             LOG(DEBUG) << "accept";
