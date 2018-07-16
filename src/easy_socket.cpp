@@ -114,14 +114,14 @@ Socket Socket::accept() const
     {
         socklen_t length = sizeof(struct sockaddr_in);
         new_socket._addrs._addr_in = new (struct sockaddr_in);
-		memset(new_socket._addrs._addr_in, 0, sizeof(struct sockaddr_in));
+        memset(new_socket._addrs._addr_in, 0, sizeof(struct sockaddr_in));
         new_socket_fd = ::accept(_socket_fd, (struct sockaddr *)new_socket._addrs._addr_in, &length);
     }
     else if (_domain == AF_INET6)
     {
         socklen_t length = sizeof(struct sockaddr_in6);
         new_socket._addrs._addr_in6 = new (struct sockaddr_in6);
-		memset(new_socket._addrs._addr_in6, 0, sizeof(struct sockaddr_in6));
+        memset(new_socket._addrs._addr_in6, 0, sizeof(struct sockaddr_in6));
         new_socket_fd = ::accept(_socket_fd, (struct sockaddr *)new_socket._addrs._addr_in6, &length);
     }
     else if (_domain == AF_UNIX)
