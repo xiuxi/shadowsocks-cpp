@@ -107,7 +107,7 @@ void Socket::_destroy()
 Socket Socket::accept() const 
 {
     Socket new_socket;
-	new_socket._ref_count = new size_t(1);
+    new_socket._ref_count = new size_t(1);
     int new_socket_fd = -1;
     
     if (_domain == AF_INET)
