@@ -642,19 +642,25 @@ void DNSResolver::resolve(const std::string &hostname, DNSHandle *hd)
             hd->handle_dns_resolved("", "", "invalid hostname: " + hostname);
             return ;
         }
+        
+        auto it_hd = _hd_to_hostname.find(hd);
+        if (it_hd != _hd_to_hostname.end())
+        {
+            LOG(WARNING) << "the handle already called DNSResolver::resolve";
+            return;
+        }
+        _hd_to_hostname[hd] = hostname; //_hd_to_hostname: {handler : hostname}  
         auto it_ary = _hostname_to_vector_hd.find(hostname); //_hostname_to_vector_hd {hostname : std::vector<handler>}
         if  (it_ary == _hostname_to_vector_hd.end())
         {
             _hostname_status[hostname] = STATUS_FIRST; 
             _send_req(hostname, _QTYPES[0]);
-            _hostname_to_vector_hd[hostname].push_back(hd);           
-            _hd_to_hostname[hd] = hostname; //_hd_to_hostname: {handler : hostname}  
+            _hostname_to_vector_hd[hostname].push_back(hd);             
         }
         else
         {
             it_ary->second.push_back(hd);
-            // TODO send again only if waited too long
-            _send_req(hostname, _QTYPES[0]);// 
+            _send_req(hostname, _QTYPES[0]);
         }
     }
 }
