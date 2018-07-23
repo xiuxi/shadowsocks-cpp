@@ -546,7 +546,7 @@ void TCPRelayHandler::_destroy()
         {
             _server->_eventloop->remove(_local_sock.get_socket());
         }
-        atch (std::exception &e)
+        catch (std::exception &e)
         {
             LOG(ERROR) << e.what();
         }
@@ -562,7 +562,7 @@ void TCPRelayHandler::_destroy()
         {
             _server->_eventloop->remove(_remote_sock.get_socket());
         }
-        atch (std::exception &e)
+        catch (std::exception &e)
         {
             LOG(ERROR) << e.what();
         }
