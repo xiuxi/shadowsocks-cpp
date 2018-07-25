@@ -98,7 +98,7 @@ def check():
         except subprocess.CalledProcessError as e:
             pass
     else:
-        print("you need to install g++ 4.9-7.2 (or later) or 3.4-5.0 (or later)")
+        print("you need to install g++ 4.9-7.2 (or later) or clang 3.4-5.0 (or later)")
         sys.exit(1)
     
     if not flag:
