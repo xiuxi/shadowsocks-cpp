@@ -39,7 +39,7 @@ def install_libsodium():
     os.chdir(cur_dir + os.sep + "temp")
     os.system(libdium_download)
     os.chdir(cur_dir + os.sep + "temp" + os.sep + "libsodium")
-    os.system("./configure --prefix=/usr/local --libdir=lib --includedir=include")
+    os.system("./configure --prefix=/usr/local --libdir=/usr/local/lib --includedir=/usr/local/include")
     os.system("make && make check")
     os.system("sudo make install")
    
