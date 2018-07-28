@@ -15,7 +15,8 @@
 class Socket
 {
 public:
-    Socket(); 
+    Socket();
+    Socket(const int fd);  
     Socket(const int domain, const int type, const int protocol);
     Socket(const Socket &s);
     Socket &operator=(const Socket &s);         
@@ -23,7 +24,6 @@ public:
     Socket &operator=(Socket &&s);
     ~Socket();
     
-    Socket(const int fd) : _socket_fd(fd) {} //temporarily for STL find
     bool operator==(const Socket &s) const { return _socket_fd != -1 && s._socket_fd != -1 && _socket_fd == s._socket_fd; }
     bool operator!=(const Socket &s) const { return !(*this == s); }
     explicit operator bool() const { return _socket_fd == -1 ? false : true; }

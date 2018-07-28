@@ -20,6 +20,12 @@ Socket::Socket(): _domain(-1), _ref_count(nullptr), _socket_fd(-1)
     memset(&_addrs, 0, sizeof(_addrs)); 
 }
 
+//temporarily for STL find when only have the socket file descriptor 
+Socket::Socket(const int fd): _domain(-1), _ref_count(nullptr), _socket_fd(fd) 
+{
+    memset(&_addrs, 0, sizeof(_addrs)); 
+} 
+
 Socket::Socket(const int domain, const int type, const int protocol): _domain(domain), _ref_count(nullptr), _socket_fd(-1)
 {   
     if (domain != AF_INET && domain != AF_INET6 && domain && AF_UNIX)
