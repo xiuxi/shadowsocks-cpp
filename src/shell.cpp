@@ -35,7 +35,7 @@ void init_cmdline(cmdline::parser &cmd)
                                aes-{128|192|256}-ofb, aes-{128|192|256}-ctr,\n\
                                aes-{128|192|256}-ocb, camellia-{128|192|256}-cfb,\n\
                                des-cfb, idea-cfb, rc2-cfb, seed-cfb, rc4,\n\
-                               rc4-md5, table, bf-cfb, cast5-cfb",
+                               table, bf-cfb, cast5-cfb",
                         false, "xchacha20-ietf-poly1305");                            
     cmd.add<int>("timeout", 't', "timeout in seconds, default: 300", false, 300);  
     cmd.add("fast_open", '\0', "use TCP_FASTOPEN, requires Linux 3.7+");
