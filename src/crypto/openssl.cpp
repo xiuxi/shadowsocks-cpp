@@ -76,9 +76,9 @@ void OpenSSLAeadCrypto::cipher_ctx_init()
 {  
     if (!EVP_CipherInit_ex(_ctx, nullptr, nullptr, nullptr, &_nonce[0], CIPHER_ENC_UNCHANGED))
     {
-        throw OpensslError("can not initialize cipher context: " + get_opensll_error_str());
-        nonce_increment();
+        throw OpensslError("can not initialize cipher context: " + get_opensll_error_str()); 
     }
+    nonce_increment();
 }
 
 void  OpenSSLAeadCrypto::set_tag(const unsigned char *tag)
