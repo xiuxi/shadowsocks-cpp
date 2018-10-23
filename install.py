@@ -107,7 +107,7 @@ def check():
      
     os.system("export CXX=" + compiler)
     bin_names = ["git", "wget", "cmake", "make", "tar"]
-    for key in bin_names:
+    for key in bin_names[0]:
         if not find_bin(key):
             print("you need to install %s first" % (key))
             sys.exit(1)
